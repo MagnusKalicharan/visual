@@ -2,56 +2,33 @@ import streamlit as st
 import plotly.graph_objects as go
 import numpy as np
 
-# ==========================================
-# 1. PAGE CONFIGURATION
-# ==========================================
 st.set_page_config(layout="wide")
-
-# ==========================================
-# 2. THE MATH ENGINE
-# ==========================================
-def calculate_cross_product(v1, v2):
+def cross(v1, v2):
     return np.cross(v1, v2)
 
-def draw_3d_vectors(v1, v2, v_cross):
+def graph(v1, v2, v_cross):
     fig = go.Figure()
-
-    # DYNAMIC BOUNDS: Find the largest coordinate value across all vectors 
-    # so the graph perfectly zooms in or out to fit them.
-    max_val = max(np.max(np.abs(v1)), np.max(np.abs(v2)), np.max(np.abs(v_cross)))
-    # Set the bound to at least 5 (for the slider max) + a little extra padding
-    BOUND = float(max(5.0, max_val + 2.0))
-
-    # 1. Draw custom X, Y, Z axes that strictly pass through the origin (0,0,0)
-    axis_line = dict(color='black', width=3)
-    fig.add_trace(go.Scatter3d(x=[-BOUND, BOUND], y=[0,0], z=[0,0], mode='lines', line=axis_line, showlegend=False))
-    fig.add_trace(go.Scatter3d(x=[0,0], y=[-BOUND, BOUND], z=[0,0], mode='lines', line=axis_line, showlegend=False))
-    fig.add_trace(go.Scatter3d(x=[0,0], y=[0,0], z=[-BOUND, BOUND], mode='lines', line=axis_line, showlegend=False))
-
-    # 2. Add manual labels for our custom axes at the very edges
+    max_val=max(np.max(np.abs(v1)),np.max(np.abs(v2)),np.max(np.abs(v_cross)))
+    BOUND=float(max(5.0,max_val+2.0))
+    axis_line=dict(color='black',width=3)
+    fig.add_trace(go.Scatter3d(x=[-BOUND, BOUND],y=[0,0],z=[0,0],mode='lines',line=axis_line,showlegend=False))
+    fig.add_trace(go.Scatter3d(x=[0,0],y=[-BOUND, BOUND],z=[0,0],mode='lines',line=axis_line,showlegend=False))
+    fig.add_trace(go.Scatter3d(x=[0,0],y=[0,0],z=[-BOUND, BOUND],mode='lines',line=axis_line,showlegend=False))
     fig.add_trace(go.Scatter3d(
         x=[BOUND, 0, 0], y=[0, BOUND, 0], z=[0, 0, BOUND],
         mode='text', text=['X Axis', 'Y Axis', 'Z Axis'], 
         textposition='top center',
         textfont=dict(size=14, color='black'), showlegend=False
     ))
-
     def add_vector(fig, vector, color, name):
-        # Draw the vector line
         fig.add_trace(go.Scatter3d(
             x=[0, vector[0]], y=[0, vector[1]], z=[0, vector[2]],
             mode='lines', line=dict(color=color, width=6), name=name
         ))
-        
-        # 3. NORMALIZE the direction for the cone so it never distorts or disappears
         mag = np.linalg.norm(vector)
         if mag > 0:
-            u_norm, v_norm, w_norm = vector[0]/mag, vector[1]/mag, vector[2]/mag
-            
-            # Dynamic cone size based on the graph bounds so arrowheads always look right
+            u_norm, v_norm, w_norm = vector[0]/mag, vector[1]/mag, vector[2]/mag      
             cone_size = BOUND * 0.08
-            
-            # Draw the arrowhead using the normalized directions
             fig.add_trace(go.Cone(
                 x=[vector[0]], y=[vector[1]], z=[vector[2]],
                 u=[u_norm], v=[v_norm], w=[w_norm],
@@ -59,19 +36,17 @@ def draw_3d_vectors(v1, v2, v_cross):
                 colorscale=[[0, color], [1, color]], showscale=False, name=name, showlegend=False
             ))
 
-    # Draw the vectors
     add_vector(fig, v1, 'red', 'Vector A')
     add_vector(fig, v2, 'blue', 'Vector B')
     add_vector(fig, v_cross, 'green', 'A × B')
 
-    # 4. Bring back the grid and numbers for a proper coordinate system
     axis_config = dict(
         range=[-BOUND, BOUND],
-        showbackground=False,  # Keep it looking clean and white
-        showgrid=True,         # Bring back the grid lines
+        showbackground=False,  
+        showgrid=True,         
         gridcolor='lightgray',
-        zeroline=False,        # We use our own black zero lines
-        showticklabels=True,   # Bring back the numbers!
+        zeroline=False,        
+        showticklabels=True,   
         title=""
     )
 
@@ -87,28 +62,18 @@ def draw_3d_vectors(v1, v2, v_cross):
         height=600
     )
     return fig
-
-# ==========================================
-# 3. SIDEBAR (Sliders only)
-# ==========================================
-
-# ==========================================
-# 4. MAIN LAYOUT (Graph Left, Math Right)
-# ==========================================
 col1, col2 = st.columns([1,2]) 
-
-
 with col1:
     st.title("Parameters")
     st.subheader("Vector A")
-    a_x = st.slider("A: X", -5.0, 5.0, 2.0, 0.5,width=300)
-    a_y = st.slider("A: Y", -5.0, 5.0, 0.0, 0.5,width=300)
-    a_z = st.slider("A: Z", -5.0, 5.0, 0.0, 0.5,width=300)
+    a_x = st.slider("A: X",-5.0,5.0,2.0,0.5,width=300)
+    a_y = st.slider("A: Y",-5.0,5.0,0.0,0.5,width=300)
+    a_z = st.slider("A: Z",-5.0,5.0,0.0,0.5,width=300)
 
     st.subheader("Vector B")
-    b_x = st.slider("B: X", -5.0, 5.0, 0.0, 0.5,width=300)
-    b_y = st.slider("B: Y", -5.0, 5.0, 3.0, 0.5,width=300)
-    b_z = st.slider("B: Z", -5.0, 5.0, 0.0, 0.5,width=300)
+    b_x = st.slider("B: X",-5.0, 5.0, 0.0, 0.5,width=300)
+    b_y = st.slider("B: Y",-5.0, 5.0, 3.0, 0.5,width=300)
+    b_z = st.slider("B: Z",-5.0, 5.0, 0.0, 0.5,width=300)
     
     
 
@@ -116,15 +81,13 @@ with col1:
 
 
 with col2:
-    
-    vector_a = np.array([a_x, a_y, a_z])
-    vector_b = np.array([b_x, b_y, b_z])
-    cross_result = calculate_cross_product(vector_a, vector_b)
-    fig = draw_3d_vectors(vector_a, vector_b, cross_result)
+    vector_a=np.array([a_x, a_y, a_z])
+    vector_b=np.array([b_x, b_y, b_z])
+    cross_result=cross(vector_a, vector_b)
+    fig=graph(vector_a, vector_b, cross_result)
     fig.update_layout(height=700)
     st.plotly_chart(fig, theme=None, use_container_width=True)
 st.subheader("Cross Product")
-    
 st.markdown(r"$\mathbf{A} \times \mathbf{B} = \begin{vmatrix} \mathbf{i} & \mathbf{j} & \mathbf{k} \\ a_x & a_y & a_z \\ b_x & b_y & b_z \end{vmatrix}$")
     
 st.write("### Vectors")
